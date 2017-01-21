@@ -1,5 +1,5 @@
-from numpy import exp, array, random, dot
-
+from numpy import exp, array, random, dot, genfromtxt, apply_along_axis
+import pdb
 
 class NeuralNetwork():
     def __init__(self):
@@ -7,10 +7,10 @@ class NeuralNetwork():
         # every time the program runs.
         random.seed(1)
 
-        # We model a single neuron, with 3 input connections and 1 output connection.
-        # We assign random weights to a 3 x 1 matrix, with values in the range -1 to 1
+        # We model a single neuron, with 22 input connections and 1 output connection.
+        # We assign random weights to a 22 x 1 matrix, with values in the range -1 to 1
         # and mean 0.
-        self.synaptic_weights = 2 * random.random((3, 1)) - 1
+        self.synaptic_weights = 2 * random.random((22, 1)) - 1
 
     # The Sigmoid function, which describes an S shaped curve.
     # We pass the weighted sum of the inputs through this function to
@@ -57,18 +57,24 @@ if __name__ == "__main__":
     print "Random starting synaptic weights: "
     print neural_network.synaptic_weights
 
-    # The training set. We have 4 examples, each consisting of 3 input values
-    # and 1 output value.
-    training_set_inputs = array([[0, 0, 1], [1, 1, 1], [1, 0, 1], [0, 1, 1]])
-    training_set_outputs = array([[0, 1, 1, 0]]).T
+    # Load Mushroom Data
+    shrooms = genfromtxt('shrooms.csv', delimiter=',')
+    shrooms_inputs = shrooms[:,1:]
+    shrooms_outputs = shrooms[:,0]
+
+    # Split Traning Data
+    split_point = 4000
+    training_set_inputs, test_inputs = shrooms_inputs[:split_point,:], shrooms_inputs[split_point:,:]
+    training_set_outputs, test_outputs = array([shrooms_outputs[:split_point]]).T, array([shrooms_outputs[split_point:]]).T
 
     # Train the neural network using a training set.
     # Do it 10,000 times and make small adjustments each time.
-    neural_network.train(training_set_inputs, training_set_outputs, 10000)
+    neural_network.train(training_set_inputs, training_set_outputs, 1000)
 
     print "New synaptic weights after training: "
     print neural_network.synaptic_weights
 
-    # Test the neural network with a new situation.
-    print "Considering new situation [1, 0, 0] -> ?: "
-    print neural_network.think(array([1, 0, 0]))
+    # Calculate Correctness
+    predictions = apply_along_axis(neural_network.think, axis=1, arr=test_inputs)
+    correct_count = (predictions == test_outputs).sum()
+    print "Correct percentage: {}".format(float(correct_count)/len(test_outputs))
