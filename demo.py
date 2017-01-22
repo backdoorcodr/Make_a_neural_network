@@ -35,10 +35,13 @@ class NeuralNetwork():
             # and the predicted output).
             error = training_set_outputs - output
 
+            learning_rate = 100.0/(iteration+1)
+
             # Multiply the error by the input and again by the gradient of the Sigmoid curve.
             # This means less confident weights are adjusted more.
             # This means inputs, which are zero, do not cause changes to the weights.
-            adjustment = dot(training_set_inputs.T, error * self.__sigmoid_derivative(output))
+            #adjustment = dot(training_set_inputs.T, error * self.__sigmoid_derivative(output))
+            adjustment = dot(training_set_inputs.T, error * learning_rate)
 
             # Adjust the weights.
             self.synaptic_weights += adjustment
@@ -63,13 +66,13 @@ if __name__ == "__main__":
     shrooms_outputs = shrooms[:,0]
 
     # Split Traning Data
-    split_point = 4000
+    split_point = 6500
     training_set_inputs, test_inputs = shrooms_inputs[:split_point,:], shrooms_inputs[split_point:,:]
     training_set_outputs, test_outputs = array([shrooms_outputs[:split_point]]).T, array([shrooms_outputs[split_point:]]).T
 
     # Train the neural network using a training set.
     # Do it 10,000 times and make small adjustments each time.
-    neural_network.train(training_set_inputs, training_set_outputs, 1000)
+    neural_network.train(training_set_inputs, training_set_outputs, 10000)
 
     print "New synaptic weights after training: "
     print neural_network.synaptic_weights
