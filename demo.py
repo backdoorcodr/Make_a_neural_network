@@ -1,11 +1,13 @@
-from numpy import exp, array, random, dot, genfromtxt, apply_along_axis
+from numpy import exp, array, random, dot, genfromtxt, apply_along_axis, append
 import pdb
 
 class NeuralNetwork():
-    def __init__(self):
+    def __init__(self, hidden_units=array([2])):
         # Seed the random number generator, so it generates the same numbers
         # every time the program runs.
         random.seed(1)
+
+        self.weights = [2 * random.random((22, 2)) -1, random.random((2, 1))]
 
         # We model a single neuron, with 22 input connections and 1 output connection.
         # We assign random weights to a 22 x 1 matrix, with values in the range -1 to 1
@@ -28,28 +30,26 @@ class NeuralNetwork():
     # Adjusting the synaptic weights each time.
     def train(self, training_set_inputs, training_set_outputs, number_of_training_iterations):
         for iteration in xrange(number_of_training_iterations):
+
             # Pass the training set through our neural network (a single neuron).
-            output = self.think(training_set_inputs)
+            output = self.think(training_set_inputs, self.synaptic_weights)
 
             # Calculate the error (The difference between the desired output
             # and the predicted output).
             error = training_set_outputs - output
 
-            learning_rate = 100.0/(iteration+1)
-
             # Multiply the error by the input and again by the gradient of the Sigmoid curve.
             # This means less confident weights are adjusted more.
             # This means inputs, which are zero, do not cause changes to the weights.
-            #adjustment = dot(training_set_inputs.T, error * self.__sigmoid_derivative(output))
-            adjustment = dot(training_set_inputs.T, error * learning_rate)
+            adjustment = dot(training_set_inputs.T, error * self.__sigmoid_derivative(output))
 
             # Adjust the weights.
             self.synaptic_weights += adjustment
 
     # The neural network thinks.
-    def think(self, inputs):
+    def think(self, inputs, weights):
         # Pass inputs through our neural network (our single neuron).
-        return self.__sigmoid(dot(inputs, self.synaptic_weights))
+        return self.__sigmoid(dot(inputs, weights))
 
 
 if __name__ == "__main__":
@@ -78,6 +78,6 @@ if __name__ == "__main__":
     print neural_network.synaptic_weights
 
     # Calculate Correctness
-    predictions = apply_along_axis(neural_network.think, axis=1, arr=test_inputs)
+    predictions = apply_along_axis(neural_network.think, 1, test_inputs, neural_network.synaptic_weights)
     correct_count = (predictions == test_outputs).sum()
     print "Correct percentage: {}".format(float(correct_count)/len(test_outputs))
